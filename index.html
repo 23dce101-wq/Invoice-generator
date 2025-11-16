@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator - Madhav Homes E-Block</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <h1>🏢 Invoice Generator</h1>
+            <p>Madhav Homes E-Block</p>
+        </header>
+
+        <!-- Input Form Section -->
+        <div class="form-section" id="formSection">
+            <h2>Create New Invoice</h2>
+            <form id="invoiceForm">
+                <!-- Flat & Invoice Details -->
+                <div class="form-group-section">
+                    <h3>Flat & Invoice Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="flatNumber">Flat Number *</label>
+                            <input type="text" id="flatNumber" required placeholder="e.g., A-101">
+                        </div>
+                        <div class="form-group">
+                            <label for="invoiceDate">Invoice Date *</label>
+                            <input type="date" id="invoiceDate" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fromMonth">Billing From Month *</label>
+                            <input type="month" id="fromMonth" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="toMonth">Billing To Month *</label>
+                            <input type="month" id="toMonth" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Details -->
+                <div class="form-group-section">
+                    <h3>Price Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="maintenanceFee">Maintenance Fee (₹) *</label>
+                            <input type="number" id="maintenanceFee" required placeholder="0" min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="lateFee">Late Fee Charge (₹)</label>
+                            <input type="number" id="lateFee" placeholder="0" min="0" step="0.01" value="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="extraCharges">Extra Charges Fee (₹)</label>
+                            <input type="number" id="extraCharges" placeholder="0" min="0" step="0.01" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="totalFees">Total Fees (₹)</label>
+                            <input type="number" id="totalFees" readonly placeholder="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signature Upload -->
+                <div class="form-group-section">
+                    <h3>Signature</h3>
+                    <div class="form-group">
+                        <label for="signatureUpload">Upload Signature (PNG/JPG)</label>
+                        <input type="file" id="signatureUpload" accept="image/png, image/jpeg, image/jpg">
+                        <div id="signaturePreview" class="signature-preview"></div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Generate Invoice</button>
+                    <button type="button" class="btn btn-secondary" id="resetBtn">Reset Form</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Invoice Preview Section -->
+        <div class="invoice-section" id="invoiceSection" style="display: none;">
+            <div class="invoice-actions">
+                <button class="btn btn-success" id="downloadBtn">📥 Download PDF</button>
+                <button class="btn btn-secondary" id="backBtn">← Back to Form</button>
+            </div>
+
+            <!-- Invoice Content -->
+            <div class="invoice-container" id="invoiceContainer">
+                <div class="invoice-header">
+                    <div class="invoice-logo">
+                        <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="15" width="50" height="40" fill="#d4a017" opacity="0.2" rx="2"/>
+                            <rect x="10" y="20" width="12" height="10" fill="#d4a017" rx="1"/>
+                            <rect x="24" y="20" width="12" height="10" fill="#b8860b" rx="1"/>
+                            <rect x="38" y="20" width="12" height="10" fill="#d4a017" rx="1"/>
+                            <rect x="10" y="32" width="12" height="10" fill="#b8860b" rx="1"/>
+                            <rect x="24" y="32" width="12" height="10" fill="#d4a017" rx="1"/>
+                            <rect x="38" y="32" width="12" height="10" fill="#b8860b" rx="1"/>
+                            <rect x="10" y="44" width="12" height="8" fill="#d4a017" rx="1"/>
+                            <rect x="24" y="44" width="12" height="8" fill="#b8860b" rx="1"/>
+                            <rect x="38" y="44" width="12" height="8" fill="#d4a017" rx="1"/>
+                            <path d="M5 15 L30 5 L55 15" stroke="#d4a017" stroke-width="2" fill="none"/>
+                        </svg>
+                    </div>
+                    <h1 class="invoice-title">MADHAV HOMES</h1>
+                    <h2 class="invoice-subtitle">E-BLOCK</h2>
+                    <div class="header-divider"></div>
+                </div>
+
+                <div class="invoice-info-box">
+                    <div class="info-row">
+                        <div class="info-item">
+                            <span class="info-label">Flat No:</span>
+                            <span class="info-value" id="displayFlatNumber">E-406</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Date:</span>
+                            <span class="info-value" id="displayDate">15-11-2025</span>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-item-full">
+                            <span class="info-label">From:</span>
+                            <span class="info-value" id="displayFromMonth">OCTOBER 2025</span>
+                            <span class="info-label">to</span>
+                            <span class="info-value" id="displayToMonth">NOVEMBER 2025</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="charges-heading">ITEMIZED CHARGES</h3>
+
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th>DESCRIPTION</th>
+                            <th class="amount-col">AMOUNT (INR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Maintenance Fee</td>
+                            <td class="amount-col" id="displayMaintenanceFee">1400.0</td>
+                        </tr>
+                        <tr>
+                            <td>Late Fee Charge</td>
+                            <td class="amount-col" id="displayLateFee">0.0</td>
+                        </tr>
+                        <tr>
+                            <td>Extra Charges Fee</td>
+                            <td class="amount-col" id="displayExtraCharges">0.0</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="total-section">
+                    <div class="total-badge">
+                        <div class="total-label">TOTAL FEES</div>
+                        <div class="total-amount">INR <span id="displayTotalFees">1400.0</span></div>
+                    </div>
+                </div>
+
+                <div class="invoice-footer">
+                    <div class="signature-section">
+                        <p class="signature-name">Jigar Prajapati</p>
+                        <img id="displaySignature" src="" alt="Signature" style="display: none;">
+                        <div class="signature-line"></div>
+                    </div>
+                    <div class="thank-you">
+                        <p>Thank you for your timely contribution!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
