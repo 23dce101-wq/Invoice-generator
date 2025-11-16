@@ -15,8 +15,7 @@ const maintenanceFeeInput = document.getElementById('maintenanceFee');
 const lateFeeInput = document.getElementById('lateFee');
 const extraChargesInput = document.getElementById('extraCharges');
 const totalFeesInput = document.getElementById('totalFees');
-const signatureUploadInput = document.getElementById('signatureUpload');
-const signaturePreview = document.getElementById('signaturePreview');
+// Signature is now fixed - no upload needed
 
 // Invoice Display Elements
 const displayFlatNumber = document.getElementById('displayFlatNumber');
@@ -30,8 +29,7 @@ const displayExtraCharges = document.getElementById('displayExtraCharges');
 const displayTotalFees = document.getElementById('displayTotalFees');
 const displaySignature = document.getElementById('displaySignature');
 
-// Global variable to store signature image data
-let signatureImageData = null;
+// Signature is now embedded as base64 in HTML
 
 // Initialize - Set today's date
 invoiceDateInput.valueAsDate = new Date();
@@ -51,41 +49,7 @@ maintenanceFeeInput.addEventListener('input', calculateTotal);
 lateFeeInput.addEventListener('input', calculateTotal);
 extraChargesInput.addEventListener('input', calculateTotal);
 
-// Signature Upload Handler
-signatureUploadInput.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    
-    if (file) {
-        // Validate file type
-        if (!file.type.match('image/png') && !file.type.match('image/jpeg') && !file.type.match('image/jpg')) {
-            alert('Please upload a PNG or JPG image file.');
-            signatureUploadInput.value = '';
-            return;
-        }
-        
-        // Validate file size (max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            alert('File size must be less than 2MB.');
-            signatureUploadInput.value = '';
-            return;
-        }
-        
-        // Read and preview the image
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            signatureImageData = event.target.result;
-            
-            // Show preview
-            signaturePreview.innerHTML = `<img src="${signatureImageData}" alt="Signature Preview">`;
-            signaturePreview.classList.remove('empty');
-        };
-        reader.readAsDataURL(file);
-    } else {
-        signatureImageData = null;
-        signaturePreview.innerHTML = '';
-        signaturePreview.classList.add('empty');
-    }
-});
+// Signature is now fixed in the invoice template
 
 // Format date to DD/MM/YYYY
 function formatDate(dateString) {
@@ -144,12 +108,11 @@ invoiceForm.addEventListener('submit', function(e) {
     displayExtraCharges.textContent = formatCurrency(extraCharges);
     displayTotalFees.textContent = formatCurrency(total);
     
-    // Display signature if uploaded
-    if (signatureImageData) {
-        displaySignature.src = signatureImageData;
-        displaySignature.style.display = 'block';
-    } else {
-        displaySignature.style.display = 'none';
+    // Signature (SVG) is always visible
+    const signature = document.getElementById('displaySignature');
+    if (signature) {
+        signature.style.display = 'block';
+        signature.style.opacity = '1';
     }
     
     // Show invoice, hide form
@@ -164,9 +127,6 @@ invoiceForm.addEventListener('submit', function(e) {
 resetBtn.addEventListener('click', function() {
     if (confirm('Are you sure you want to reset the form? All data will be lost.')) {
         invoiceForm.reset();
-        signatureImageData = null;
-        signaturePreview.innerHTML = '';
-        signaturePreview.classList.add('empty');
         totalFeesInput.value = '';
         invoiceDateInput.valueAsDate = new Date();
     }
@@ -205,17 +165,18 @@ function generateInvoicePDF() {
         filename: fileName,
         image: { type: 'png', quality: 1 },
         html2canvas: {
-            scale: scaleFactor,
+            scale: 4, // Increased for better SVG rendering
             useCORS: true,
             backgroundColor: '#ffffff',
             logging: false,
             scrollY: -window.scrollY,
             scrollX: 0,
-            allowTaint: true,
+            allowTaint: false,
             imageTimeout: 15000,
             letterRendering: true,
-            removeContainer: true,
-            imageRendering: 'high-quality'
+            removeContainer: false,
+            foreignObjectRendering: false,
+            svgRendering: true
         },
         jsPDF: {
             unit: 'mm',
@@ -253,10 +214,7 @@ function generateInvoicePDF() {
     });
 }
 
-// Add empty class to signature preview on load
-if (!signatureImageData) {
-    signaturePreview.classList.add('empty');
-}
+// Signature is now fixed - always visible
 
 // Prevent form submission on Enter key (except for submit button)
 invoiceForm.addEventListener('keydown', function(e) {
@@ -274,8 +232,7 @@ function saveFormData() {
         toMonth: toMonthInput.value,
         maintenanceFee: maintenanceFeeInput.value,
         lateFee: lateFeeInput.value,
-        extraCharges: extraChargesInput.value,
-        signatureImageData: signatureImageData
+        extraCharges: extraChargesInput.value
     };
     localStorage.setItem('invoiceFormData', JSON.stringify(formData));
 }
@@ -294,12 +251,6 @@ function loadFormData() {
                 maintenanceFeeInput.value = formData.maintenanceFee || '';
                 lateFeeInput.value = formData.lateFee || '';
                 extraChargesInput.value = formData.extraCharges || '';
-                
-                if (formData.signatureImageData) {
-                    signatureImageData = formData.signatureImageData;
-                    signaturePreview.innerHTML = `<img src="${signatureImageData}" alt="Signature Preview">`;
-                    signaturePreview.classList.remove('empty');
-                }
                 
                 calculateTotal();
             } else {
